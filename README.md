@@ -1,1 +1,1 @@
-# devops_aws_pipeline
+# DevOps AWS Pipeline practice
