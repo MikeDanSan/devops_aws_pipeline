@@ -53,3 +53,72 @@ resource "aws_nat_gateway" "nat_gw" {
   }
 }
 */
+
+/*
+Create route tables
+In AWS, a Route Table is a vital networking resource within an Amazon VPC that defines the rules, or routes, for directing network traffic. 
+Each route specifies a destination IP range and a target, such as an internet gateway, virtual private gateway, network interface, or NAT gateway. 
+Every VPC has a main route table by default, with subnets either explicitly associated with specific route tables or defaulting to the main one. 
+Route tables are crucial for managing traffic flow in scenarios like public subnets (with internet access), private subnets (without direct internet access), 
+and VPN-only subnets (for secure connections to on-premises networks). 
+*/
+
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.production_vpc.id
+  route {
+    cidr_block = var.all_cidr
+    gateway_id = aws_internet_gateway.igw.id
+  }
+  tags = {
+    Name = "Public RT"
+  }
+}
+
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.production_vpc.id
+  route {
+    cidr_block = var.all_cidr
+    nat_gateway_id = aws_nat_gateway.nat_gw.id
+  }
+  tags = {
+    Name = "Private RT"
+  }
+}
+
+/*
+Create subnets
+a subnet is a subdivision of an Amazon Virtual Private Cloud (VPC) that allows you to segment the IP address range of the VPC into smaller, more manageable chunks. 
+Each subnet resides within a single Availability Zone, providing isolation and redundancy within that zone. Subnets can be designated as either public or private, 
+depending on their routing configuration. Public subnets have routes to an Internet Gateway, enabling instances within them to communicate with the internet, 
+while private subnets do not, enhancing security for internal resources. Subnets facilitate efficient and organized network management, allowing for better control over traffic flow, 
+resource allocation, and security within the VPC.
+*/
+
+resource "aws_subnet" "public_subnet1" {
+  vpc_id = aws_vpc.production_vpc.id
+  cidr_block = var.public_subnet1_cidr
+  availability_zone = var.availability_zone1
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "Public subnet 1"
+  }
+}
+
+resource "aws_subnet" "public_subnet2" {
+  vpc_id = aws_vpc.production_vpc.id
+  cidr_block = var.public_subnet2_cidr
+  availability_zone = var.availability_zone2
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "Public subnet 2"
+  }
+}
+
+resource "aws_subnet" "private_subnet" {
+  vpc_id = aws_vpc.production_vpc.id
+  cidr_block = var.private_subnet_cidr
+  availability_zone = var.availability_zone2
+  tags = {
+    Name = "Private subnet"
+  }
+}
