@@ -29,3 +29,11 @@ variable "availability_zone1" {
 variable "availability_zone2" {
   type = string
 }
+
+variable "jenkins_port" {
+  type = number
+}
+
+variable "ssh_port" {
+  type = number
+}

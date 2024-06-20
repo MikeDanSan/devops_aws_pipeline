@@ -44,7 +44,7 @@ NAT Gateway is a managed network address translation service that enables instan
 Virtual Private Cloud (VPC) to initiate outbound communication with the internet while maintaining security and 
 privacy by using a static public IP address.
 */
-/*
+
 resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.nat_eip.id
   subnet_id = aws_subnet.public_subnet1.id
@@ -52,7 +52,6 @@ resource "aws_nat_gateway" "nat_gw" {
     Name = "NAT Gateway"
   }
 }
-*/
 
 /*
 Create route tables
@@ -122,3 +121,55 @@ resource "aws_subnet" "private_subnet" {
     Name = "Private subnet"
   }
 }
+
+# associate route tables with subnets
+resource "aws_route_table_association" "public_association1" {
+  subnet_id = aws_subnet.public_subnet1.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table_association" "public_association2" {
+  subnet_id = aws_subnet.public_subnet2.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table_association" "private_association" {
+  subnet_id = aws_subnet.private_subnet.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+# Create Jenkins security group
+resource "aws_security_group" "jenkins_sq" {
+  name = "Jenkins SG"
+  description = "Allow ports 8080 and 22"
+  vpc_id = aws_vpc.production_vpc.id
+
+  ingress {
+    description = "Jenkins"
+    from_port = var.jenkins_port
+    to_port = var.jenkins_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "SSH"
+    from_port = var.ssh_port
+    to_port = var.ssh_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Jenkins SG"
+  }
+
+}
+
