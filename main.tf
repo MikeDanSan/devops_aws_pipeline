@@ -139,7 +139,7 @@ resource "aws_route_table_association" "private_association" {
 }
 
 # Create Jenkins security group
-resource "aws_security_group" "jenkins_sq" {
+resource "aws_security_group" "jenkins_sg" {
   name = "Jenkins SG"
   description = "Allow ports 8080 and 22"
   vpc_id = aws_vpc.production_vpc.id
@@ -173,3 +173,233 @@ resource "aws_security_group" "jenkins_sq" {
 
 }
 
+# Create  Sonarqube security group
+resource "aws_security_group" "sonarqube_sg" {
+  name = "Sonarqube SG"
+  description = "Allow port 9000 and 22"
+  vpc_id = aws_vpc.production_vpc.id
+
+  ingress {
+    description = "Sonarqube"
+    from_port = var.sonarqube_port
+    to_port = var.sonarqube_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "SSH"
+    from_port = var.ssh_port
+    to_port = var.ssh_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Sonarqube SG"
+  }
+
+}
+
+# Create Ansible security group
+resource "aws_security_group" "ansible_sg" {
+  name = "Ansible SG"
+  description = "Allow ports 22"
+  vpc_id = aws_vpc.production_vpc.id
+
+  ingress {
+    description = "SSH"
+    from_port = var.ssh_port
+    to_port = var.ssh_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Ansible SG"
+  }
+
+}
+
+# Create Grafana security group
+resource "aws_security_group" "grafana_sg" {
+  name = "Grafana SG"
+  description = "Allow ports 3000 and 22"
+  vpc_id = aws_vpc.production_vpc.id
+
+  ingress {
+    description = "Grafana"
+    from_port = var.grafana_port
+    to_port = var.grafana_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "SSH"
+    from_port = var.ssh_port
+    to_port = var.ssh_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Grafana SG"
+  }
+
+}
+
+# Create Application security group
+resource "aws_security_group" "app_sg" {
+  name = "Application SG"
+  description = "Allow ports 80 and 22"
+  vpc_id = aws_vpc.production_vpc.id
+
+  ingress {
+    description = "HTTP"
+    from_port = var.http_port
+    to_port = var.http_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description = "SSH"
+    from_port = var.ssh_port
+    to_port = var.ssh_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "Application SG"
+  }
+
+}
+
+# Create LoadBalancer security group
+resource "aws_security_group" "lb_sg" {
+  name = "LoadBalancer SG"
+  description = "Allow ports 80"
+  vpc_id = aws_vpc.production_vpc.id
+
+  ingress {
+    description = "LoadBalancer"
+    from_port = var.http_port
+    to_port = var.http_port
+    protocol = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port = 0
+    to_port = 0
+    protocol = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "LoadBalancer SG"
+  }
+
+}
+
+/*
+Create Access Control list (ACL)
+an Access Control List (ACL) is a set of rules that acts as a stateless network filter controlling inbound and outbound traffic to and from one or more subnets within a Virtual Private Cloud (VPC). 
+Each ACL rule specifies a protocol, a range of IP addresses or CIDR block, and whether to allow or deny traffic that matches these criteria. 
+Unlike security groups, which are stateful and track the state of connections, ACLs evaluate each request independently, offering an additional layer of security by controlling traffic at the subnet level. 
+They are particularly useful for implementing network-level security policies and managing traffic flow more granularly across different subnet configurations.
+*/
+
+resource "aws_network_acl" "nacl" {
+  vpc_id = aws_vpc.production_vpc.id
+  subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id, aws_subnet.private_subnet.id]
+
+  egress {
+    protocol = "tcp"
+    rule_no = "100"
+    action = "allow"
+    cidr_block = var.vpc_cidr
+    from_port = 0
+    to_port = 0
+  }
+
+  ingress {
+    protocol = "tcp"
+    rule_no = "100"
+    action = "allow"
+    cidr_block = var.all_cidr
+    from_port = var.http_port
+    to_port = var.http_port
+  }
+
+  ingress {
+    protocol = "tcp"
+    rule_no = "101"
+    action = "allow"
+    cidr_block = var.all_cidr
+    from_port = var.ssh_port
+    to_port = var.ssh_port
+  }
+
+  ingress {
+    protocol = "tcp"
+    rule_no = "102"
+    action = "allow"
+    cidr_block = var.all_cidr
+    from_port = var.jenkins_port
+    to_port = var.jenkins_port
+  }
+
+  ingress {
+    protocol = "tcp"
+    rule_no = "103"
+    action = "allow"
+    cidr_block = var.all_cidr
+    from_port = var.sonarqube_port
+    to_port = var.sonarqube_port
+  }
+
+  ingress {
+    protocol = "tcp"
+    rule_no = "104"
+    action = "allow"
+    cidr_block = var.all_cidr
+    from_port = var.grafana_port
+    to_port = var.grafana_port
+  }
+
+  tags = {
+    Name = "Main ACL"
+  }
+
+}
