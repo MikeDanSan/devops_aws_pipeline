@@ -419,3 +419,10 @@ resource "aws_ecr_repository" "ecr_repo" {
     scan_on_push = true
   }
 }
+
+# Create key pair used for Authentication
+resource "aws_key_pair" "auth_key" {
+  key_name = var.key_name
+  public_key = var.key_value
+}
+

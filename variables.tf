@@ -49,3 +49,11 @@ variable "grafana_port" {
 variable "http_port" {
   type = number
 }
+
+variable "key_name" {
+  type = string
+}
+
+variable "key_value" {
+  type = string
+}
