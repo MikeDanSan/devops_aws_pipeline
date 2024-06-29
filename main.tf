@@ -342,7 +342,7 @@ They are particularly useful for implementing network-level security policies an
 
 resource "aws_network_acl" "nacl" {
   vpc_id = aws_vpc.production_vpc.id
-  subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id, aws_subnet.private_subnet.id]
+  subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id, aws_subnet.private_subnet.id] # If can not acess with broswer (HTTP port 80) or SSH port 22 then comment this line.
 
   egress {
     protocol = "tcp"
@@ -402,4 +402,20 @@ resource "aws_network_acl" "nacl" {
     Name = "Main ACL"
   }
 
+}
+
+/*
+Amazon Elastic Container Registry (Amazon ECR) is a fully managed Docker container registry service provided by AWS that simplifies the process of storing, managing, and deploying container images. 
+ECR integrates seamlessly with Amazon Elastic Container Service (ECS), Amazon Elastic Kubernetes Service (EKS), and other AWS services, facilitating a streamlined workflow for containerized applications. 
+Users can push container images to ECR, where they are securely stored and can be easily retrieved for deployment. With features like image versioning, lifecycle policies, and encryption, 
+ECR helps ensure that container images are efficiently managed, secure, and readily available for deployment, enabling scalable and reliable containerized application development.
+*/
+
+# Create the ECR repository
+resource "aws_ecr_repository" "ecr_repo" {
+  name = "docker_repository"
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 }
