@@ -426,3 +426,48 @@ resource "aws_key_pair" "auth_key" {
   public_key = var.key_value
 }
 
+/*
+# Create S3 bucket to store terraform state
+resource "aws_s3_bucket" "devops_project_terraform_state" {
+  bucket = "mds-devops-project-terraform-state"
+
+  tags = {
+    Name = "Terraform state bucket"
+  }
+}
+
+# Attached private Owndership control
+resource "aws_s3_bucket_ownership_controls" "devops_project_terraform_state_private_oc" {
+  bucket = aws_s3_bucket.devops_project_terraform_state.id
+  rule {
+    object_ownership = "BucketOwnerPreferred"
+  }
+}
+
+# Attached private Access Control List
+resource "aws_s3_bucket_acl" "devops_project_terraform_state_acl" {
+  depends_on = [ aws_s3_bucket_ownership_controls.devops_project_terraform_state_private_oc ]
+
+  bucket = aws_s3_bucket.devops_project_terraform_state.id
+  acl = "private"
+}
+
+# Attached S3 bucket Versioning Configuration
+resource "aws_s3_bucket_versioning" "devops_project_terraform_state_ver" {
+  bucket = aws_s3_bucket.devops_project_terraform_state.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+*/
+
+# Configure S3 backend (WARNING THIS Reauires a re-initialization)
+terraform {
+  backend "s3" {
+    bucket = "mds-devops-project-terraform-state"
+    key = "prod/terraform.tfstate"
+    region = "us-east-1"
+  }
+}
+
