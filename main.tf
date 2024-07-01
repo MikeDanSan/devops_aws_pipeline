@@ -342,7 +342,7 @@ They are particularly useful for implementing network-level security policies an
 
 resource "aws_network_acl" "nacl" {
   vpc_id = aws_vpc.production_vpc.id
-  subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id, aws_subnet.private_subnet.id] # If can not acess with broswer (HTTP port 80) or SSH port 22 then comment this line.
+  # subnet_ids = [aws_subnet.public_subnet1.id, aws_subnet.public_subnet2.id, aws_subnet.private_subnet.id] # If can not acess with broswer (HTTP port 80) or SSH port 22 then comment this line.
 
   egress {
     protocol = "tcp"
@@ -426,7 +426,7 @@ resource "aws_key_pair" "auth_key" {
   public_key = var.key_value
 }
 
-/*
+
 # Create S3 bucket to store terraform state
 resource "aws_s3_bucket" "devops_project_terraform_state" {
   bucket = "mds-devops-project-terraform-state"
@@ -460,7 +460,7 @@ resource "aws_s3_bucket_versioning" "devops_project_terraform_state_ver" {
     status = "Enabled"
   }
 }
-*/
+
 
 # Configure S3 backend (WARNING THIS Reauires a re-initialization)
 terraform {
@@ -468,6 +468,21 @@ terraform {
     bucket = "mds-devops-project-terraform-state"
     key = "prod/terraform.tfstate"
     region = "us-east-1"
+  }
+}
+
+#Create Jenkins Instance
+resource "aws_instance" "Jenkins" {
+  ami = var.linux_ami
+  instance_type = var.micro_instance
+  availability_zone = var.availability_zone1
+  subnet_id = aws_subnet.public_subnet1.id
+  key_name = var.key_name
+  vpc_security_group_ids = [aws_security_group.jenkins_sg.id]
+  user_data = file("jenkins_install.sh")
+
+  tags = {
+    Name = "Jenkins"
   }
 }
 
