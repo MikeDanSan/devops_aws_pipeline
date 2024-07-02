@@ -471,7 +471,7 @@ terraform {
   }
 }
 
-#Create Jenkins Instance
+# Create Jenkins Instance
 resource "aws_instance" "Jenkins" {
   ami = var.linux_ami
   instance_type = var.micro_instance
@@ -486,3 +486,16 @@ resource "aws_instance" "Jenkins" {
   }
 }
 
+# Create the SonarQube instance
+resource "aws_instance" "SonarQube" {
+  ami = var.ubuntu_ami
+  instance_type = var.small_instance
+  availability_zone = var.availability_zone1
+  subnet_id = aws_subnet.public_subnet1.id
+  key_name = var.key_name
+  vpc_security_group_ids = [aws_security_group.sonarqube_sg.id]
+
+  tags = {
+    Name = "SonarQube"
+  }
+}

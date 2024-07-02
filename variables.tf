@@ -62,6 +62,14 @@ variable "linux_ami" {
   type = string
 }
 
+variable "ubuntu_ami" {
+  type = string
+}
+
 variable "micro_instance" {
+  type = string
+}
+
+variable "small_instance" {
   type = string
 }
